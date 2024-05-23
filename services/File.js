@@ -27,8 +27,8 @@ class File {
   saveCatalogToJson(catalog, dst) {
     const data = {
       name: catalog.name,
-      url: catalog.link,
-      urlPdf: catalog.linkPdf,
+      linkCatalog: catalog.link,
+      link: catalog.linkPdf,
       dateStart: catalog.dateStart,
       dateStartTimestamp: catalog.dateStartTmp,
       dateEnd: catalog.dateEnd,
