@@ -1,15 +1,46 @@
+require("dotenv").config();
+const fs = require("fs");
 const pp = require("puppeteer");
+const https = require("https");
+const path = require("path");
 const CatalogDto = require("./dtos/Catalog.js");
 
 /* TODO
  * [x] - find name
  * [x] - find date
  * [x] - find URL
- * [] - download PDF and save it to dir
+ * [x] - download PDF and save it to dir
  * [] - save to JSON (file?)
  * [] - error handling
  * [] - refactoring
 */
+
+const pdfDir = process.env.PDF_DIRNAME;
+
+if (!fs.existsSync(pdfDir)) {
+  fs.mkdirSync(pdfDir);
+}
+
+const downloadFile = (url, dst) => {
+  const dirname = path.dirname(dst);
+  if (!fs.existsSync(dirname)) {
+    throw new Error(`Specified directory does not exists ${dirname}`);
+  }
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(dst);
+    https.get(url, (res) => {
+      res.pipe(file);
+      file.on("finish", () => {
+        file.close();
+        console.log(`File successfully downloaded at: ${dst}`);
+        resolve();
+      });
+    }).on("error", (err) => {
+      fs.unlink(dst);
+      reject(err);
+    });
+  });
+};
 
 (async () => {
   const browser = await pp.launch({headless: false});
@@ -25,6 +56,7 @@ const CatalogDto = require("./dtos/Catalog.js");
   const lis = await catalogSection.$$("li");
   const promises = lis.map(async (el) => {
     const catalogCard = await el.$("div");
+    const pdfLink = await catalogCard.$eval(".hover .zoom figcaption a:last-child", e => e.getAttribute("href"));
 
     const catalogLinkEl = await catalogCard.$(".hover h3 a");
     const catalogName = await catalogLinkEl.evaluate(e => e.textContent);
@@ -34,8 +66,13 @@ const CatalogDto = require("./dtos/Catalog.js");
     const dateStartString = await dates[0].evaluate(e => e.getAttribute("datetime"));
     const dateEndString = await dates[1].evaluate(e => e.getAttribute("datetime"));
 
+    const pdfPath = path.resolve(pdfDir, `${catalogName}.pdf`);
+    try {
+      await downloadFile(pdfLink, pdfPath);
+    } catch (err) {
+      console.error(`Failed to download catalog ${catalogName}: ${err.message}`);
+    }
     const catalog = new CatalogDto(catalogName, dateStartString, dateEndString, catalogLink);
-    console.log(catalog.name, catalog.link, catalog.dateStart, catalog.dateEnd);
   });
 
   await Promise.all(promises);
