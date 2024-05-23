@@ -4,9 +4,9 @@ class Catalog {
   async getCatalog(catalogEl) {
     const name = await this.getName(catalogEl);
     const dates = await this.getDates(catalogEl);
-    const link = await this.getLink(catalogEl);
+    const links = await this.getLinks(catalogEl);
 
-    return new CatalogDto(name, dates.dateStart, dates.dateEnd, dates.dateStartTmp, dates.dateEndTmp, link);
+    return new CatalogDto(name, dates.dateStart, dates.dateEnd, dates.dateStartTmp, dates.dateEndTmp, links.link, links.linkPdf);
   }
 
   async getName(catalogEl) {
@@ -24,9 +24,10 @@ class Catalog {
     return {dateStart, dateEnd, dateStartTmp, dateEndTmp};
   }
 
-  async getLink(catalogEl) {
-    const link = catalogEl.$eval(".hover h3 a", e => e.getAttribute("href"));
-    return link;
+  async getLinks(catalogEl) {
+    const link = await catalogEl.$eval(".hover h3 a", e => e.getAttribute("href"));
+    const linkPdf = await catalogEl.$eval(".hover .zoom figcaption a:last-child", e => e.getAttribute("href"));
+    return {link, linkPdf};
   }
 }
 

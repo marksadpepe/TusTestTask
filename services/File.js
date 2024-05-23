@@ -28,6 +28,7 @@ class File {
     const data = {
       name: catalog.name,
       url: catalog.link,
+      urlPdf: catalog.linkPdf,
       dateStart: catalog.dateStart,
       dateStartTimestamp: catalog.dateStartTmp,
       dateEnd: catalog.dateEnd,
