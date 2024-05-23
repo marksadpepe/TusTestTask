@@ -16,8 +16,8 @@ A JSON file has the following format:
 , where:
 * ```dateStart```, ```dateEnd``` represents the date as a string
 * ```dateStartTimestamp```, ```dateEndTimestamp``` represents the date as a timestamp
-* ```link``` represents a link to the catalog in PDF
-* ```linkCatalog``` represents a link to the catalog on the website
+* ```link``` represents a URL to the catalog in PDF
+* ```linkCatalog``` represents a URL to the catalog on the website
 
 If its necessary to change the names of the directories for saving files or the launch options for ```Puppeteer```, it can be done in ```.env``` file.
 
