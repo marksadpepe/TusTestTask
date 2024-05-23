@@ -11,12 +11,16 @@ const FileService = require("./services/File.js");
  * [x] - find URL
  * [x] - download PDF and save it to dir
  * [x] - save to JSON (file?)
- * [] - error handling
+ * [x] - error handling
  * [x] - refactoring
 */
 
 const pdfDir = process.env.PDF_DIRNAME;
 const jsonDir = process.env.JSON_DIRNAME;
+const mainUrl = process.env.MAIN_URL;
+const width = Number(process.env.VIEW_WIDTH);
+const height = Number(process.env.VIEW_HEIGHT);
+const headless = false;
 
 if (!fs.existsSync(pdfDir)) {
   fs.mkdirSync(pdfDir);
@@ -27,14 +31,11 @@ if (!fs.existsSync(jsonDir)) {
 }
 
 (async () => {
-  const browser = await pp.launch({headless: false});
+  const browser = await pp.launch({headless});
   const page = await browser.newPage();
 
-  await page.goto("https://www.tus.si");
-  await page.setViewport({
-    width: 1080,
-    height: 1024
-  });
+  await page.goto(mainUrl);
+  await page.setViewport({width, height});
 
   const catalogSection = await page.waitForSelector(".main > #s2");
   const lis = await catalogSection.$$("li");
