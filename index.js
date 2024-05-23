@@ -10,15 +10,20 @@ const CatalogDto = require("./dtos/Catalog.js");
  * [x] - find date
  * [x] - find URL
  * [x] - download PDF and save it to dir
- * [] - save to JSON (file?)
+ * [x] - save to JSON (file?)
  * [] - error handling
  * [] - refactoring
 */
 
 const pdfDir = process.env.PDF_DIRNAME;
+const jsonDir = process.env.JSON_DIRNAME;
 
 if (!fs.existsSync(pdfDir)) {
   fs.mkdirSync(pdfDir);
+}
+
+if (!fs.existsSync(jsonDir)) {
+  fs.mkdirSync(jsonDir);
 }
 
 const downloadFile = (url, dst) => {
@@ -67,12 +72,33 @@ const downloadFile = (url, dst) => {
     const dateEndString = await dates[1].evaluate(e => e.getAttribute("datetime"));
 
     const pdfPath = path.resolve(pdfDir, `${catalogName}.pdf`);
+    const jsonPath = path.resolve(jsonDir, `${catalogName}.json`);
+
     try {
       await downloadFile(pdfLink, pdfPath);
     } catch (err) {
       console.error(`Failed to download catalog ${catalogName}: ${err.message}`);
     }
     const catalog = new CatalogDto(catalogName, dateStartString, dateEndString, catalogLink);
+    const data = {
+      name: catalog.name,
+      dateStart: catalog.dateStart,
+      dateEnd: catalog.dateEnd,
+      link: catalog.link
+    };
+
+    try {
+      fs.writeFile(jsonPath, JSON.stringify(data), "utf-8", (err) => {
+        if (err) {
+          console.error(`Failed to save catalog ${catalogName} to JSON: ${err.message}`);
+          return;
+        }
+      });
+
+      console.log(`Catalog ${catalogName} successfully saved to ${jsonPath} JSON file`);
+    } catch (err) {
+      console.error(`Failed to save catalog ${catalogName} to JSON: ${err.message}`);
+    }
   });
 
   await Promise.all(promises);
